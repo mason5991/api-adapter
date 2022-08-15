@@ -44,11 +44,29 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Build, tag, and push image to Amazon ECR
+      - name: Build, tag, and push images to Amazon ECR
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: api-adapter
+          ECR_REPOSITORY_MAIN: api-adapter
+          ECR_REPOSITORY_NUON: api-adapter-nuon
+          ECR_REPOSITORY_MINERTOKEN: api-adapter-minertoken
           IMAGE_TAG: develop
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY_MAIN:$IMAGE_TAG .
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY_NUON:$IMAGE_TAG .
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY_MINERTOKEN:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY_MAIN:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY_NUON:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY_MINERTOKEN:$IMAGE_TAG
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: deploy through ansible server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.ANSIBLE_SERVER_HOST }}
+          username: ${{ secrets.ANSIBLE_SERVER_USERNAME }}
+          key: ${{ secrets.ANSIBLE_SERVER_KEY }}
+          port: ${{ secrets.ANSIBLE_SERVER_PORT }}
+          script: ansible-playbook -i /opt/truflation-api-adapter/hosts /opt/truflation-api-adapter/develop/truflation-api-adapter-deploy.yml;
