@@ -86,7 +86,7 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPOSITORY_NUON:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY_MINERTOKEN:$IMAGE_TAG
   deployDevelop:
-    name: Deploy
+    name: Deploy/Develop
     needs: buildDevelop
     runs-on: ubuntu-latest
     steps:
@@ -99,7 +99,7 @@ jobs:
           port: ${{ secrets.ANSIBLE_SERVER_PORT }}
           script: ansible-playbook -i /opt/truflation-api-adapter/hosts /opt/truflation-api-adapter/develop/truflation-api-adapter-deploy.yml;
   deployProduction:
-    name: Deploy
+    name: Deploy/Production
     needs: buildProduction
     runs-on: ubuntu-latest
     steps:
